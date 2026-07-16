@@ -22,20 +22,27 @@ st.markdown("### Implementasi Deep Neural Network - Skripsi Sofiah Baiti Auliyah
 
 # 1. Siapkan Dataset Sesuai Skripsi (214 Data)
 @st.cache_data
+# HAPUS fungsi load_data() yang lama, GANTI dengan yang ini:
+
+@st.cache_data
 def load_data():
-    np.random.seed(42)
-    # Membuat 214 data sesuai distribusi hipertensi(167) dan normal(47)
-    data = pd.DataFrame({
-        'Gender': np.random.choice([0, 1], 214), 
-        'Umur': np.random.randint(18, 61, 214),
-        'BB': np.random.randint(40, 110, 214),
-        'TB': np.random.randint(145, 180, 214),
-        'LP': np.random.randint(60, 111, 214),
-        'Sistolik': np.concatenate([np.random.randint(140, 200, 167), np.random.randint(100, 139, 47)]),
-        'Diastolik': np.concatenate([np.random.randint(90, 120, 167), np.random.randint(60, 89, 47)]),
-        'Status': np.concatenate([np.zeros(167), np.ones(47)]) # 0:Hipertensi, 1:Normal
-    })
-    return data.sample(frac=1, random_state=42).reset_index(drop=True)
+    try:
+        # Membaca file Excel asli (pastikan nama file di bawah sama dengan yang Anda upload)
+        df = pd.read_excel('data_skrining.xlsx')
+        
+        # Validasi otomatis: Jika kolom 'Nama' atau 'No' masih ada, sistem akan menghapusnya
+        if 'Nama' in df.columns:
+            df = df.drop(columns=['Nama'])
+        if 'No' in df.columns:
+            df = df.drop(columns=['No'])
+            
+        return df
+    except FileNotFoundError:
+        st.error("🚨 File 'data_skrining.xlsx' tidak ditemukan! Pastikan Anda sudah mengupload file tersebut ke GitHub.")
+        # Mengembalikan dataframe kosong agar aplikasi tidak crash total
+        return pd.DataFrame() 
+
+# (Sisa kode di bawahnya tetap sama persis seperti kode yang sebelumnya)
 
 df = load_data()
 
