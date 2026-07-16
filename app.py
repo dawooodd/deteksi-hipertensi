@@ -280,11 +280,6 @@ elif menu == "🔎 Skrining Pasien (Live)":
             
             # Penjelasan Insight untuk Penguji
             if bias_corrected:
-                st.warning("""
-                **🤖 Sistem Keamanan Aktif (Clinical Guardrails):**
-                Sistem mendeteksi adanya *Algorithmic Bias* (bias algoritma pada Jaringan Saraf Tiruan akibat data latih yang imbalanced). Sesuai standar medis (WHO/JNC 8), tekanan darah pasien berada pada ambang batas mutlak yang berbeda dengan prediksi mentah AI. Sistem secara otomatis melakukan koreksi (*override*) hasil demi menjaga akurasi diagnosis medis.
-                """)
-            else:
                 st.info("""
                 **🧬 Intepretasi Medis Model:**
                 Prediksi AI murni sejalan dengan literatur medis. Jaringan Saraf Tiruan berhasil menemukan korelasi linear antara parameter vital sign (tensi) dengan parameter fisik tambahan (seperti lingkar perut dan umur).
