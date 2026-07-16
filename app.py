@@ -175,7 +175,7 @@ if menu == "🏠 Arsitektur & Pelatihan":
                 st.line_chart(chart_loss)
 
             st.info("""
-            **💡 Insight Peneliti (Pertahanan Sidang):**
+            **💡 Insight Peneliti:**
             Penggunaan fungsi aktivasi **ReLU** pada *hidden layer* terbukti mempercepat konvergensi model dan menghindari masalah *vanishing gradient*. Selain itu, kurva *Loss* yang stabil antara data latih dan validasi membuktikan bahwa strategi penambahan lapisan **Dropout 20%** dan **Early Stopping** sangat efektif dalam mencegah *overfitting* (model terlalu menghafal data).
             """)
 
