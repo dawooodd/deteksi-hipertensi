@@ -39,13 +39,13 @@ st.sidebar.success("""
 - **Sumber Data:** Posyandu Desa Tebas
 """)
 
-st.sidebar.info("💡 **Tips Sidang:** Gunakan menu Skrining Pasien untuk mendemonstrasikan bagaimana model secara *real-time* mengenali pola tekanan darah tinggi.")
+st.sidebar.info("💡 Gunakan menu Skrining Pasien untuk mendemonstrasikan bagaimana model secara *real-time* mengenali pola tekanan darah tinggi.")
 
 # ==========================================
 # HEADER UTAMA
 # ==========================================
 st.title("🩺 Sistem Deteksi Dini Hipertensi (DNN)")
-st.markdown("### Aplikasi Berbasis Web untuk Klasifikasi Risiko Hipertensi pada Usia Dewasa")
+st.markdown("### Klasifikasi Risiko Hipertensi pada Usia Dewasa")
 st.markdown("---")
 
 # ==========================================
