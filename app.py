@@ -28,7 +28,7 @@ st.markdown("### Implementasi Deep Neural Network - Skripsi Sofiah Baiti Auliyah
 def load_data():
     try:
         # Membaca file Excel asli (pastikan nama file di bawah sama dengan yang Anda upload)
-        df = pd.read_excel('data_skrining.xlsx')
+        df = pd.read_excel('data_hipertensi.xlsx')
         
         # Validasi otomatis: Jika kolom 'Nama' atau 'No' masih ada, sistem akan menghapusnya
         if 'Nama' in df.columns:
