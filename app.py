@@ -38,7 +38,7 @@ def load_data():
             
         return df
     except FileNotFoundError:
-        st.error("🚨 File 'data_skrining.xlsx' tidak ditemukan! Pastikan Anda sudah mengupload file tersebut ke GitHub.")
+        st.error("🚨 File 'data_hipertensi.xlsx' tidak ditemukan! Pastikan Anda sudah mengupload file tersebut ke GitHub.")
         # Mengembalikan dataframe kosong agar aplikasi tidak crash total
         return pd.DataFrame() 
 
