@@ -49,25 +49,48 @@ st.markdown("### Aplikasi Berbasis Web untuk Klasifikasi Risiko Hipertensi pada 
 st.markdown("---")
 
 # ==========================================
-# LOAD DATA & PERBAIKAN ERROR
+# LOAD DATA & PERBAIKAN ERROR VALUE SCALER
 # ==========================================
 @st.cache_data
 def load_data():
     try:
         df = pd.read_excel('data_hipertensi.xlsx')
+        
+        # 1. Seleksi Atribut (Sesuai Bab 4.2.2 Skripsi)
         if 'Nama' in df.columns:
             df = df.drop(columns=['Nama'])
         if 'No' in df.columns:
             df = df.drop(columns=['No'])
+            
+        # 2. Transformasi Data Kategorikal / Label Encoding (Sesuai Bab 4.2.3 Skripsi)
+        # Mengubah teks Gender menjadi angka (L=0, P=1)
+        if 'Gender' in df.columns:
+            # Membersihkan spasi berlebih dan menjadikan huruf kecil semua agar aman
+            df['Gender'] = df['Gender'].astype(str).str.strip().str.lower()
+            df['Gender'] = df['Gender'].replace({'l': 0, 'laki-laki': 0, 'p': 1, 'perempuan': 1})
+            
+        # Mengubah teks Status menjadi angka (Hipertensi=0, Normal=1)
+        if 'Status' in df.columns:
+            df['Status'] = df['Status'].astype(str).str.strip().str.lower()
+            df['Status'] = df['Status'].replace({'hipertensi': 0, 'normal': 1})
+            
+        # 3. Proteksi Mutlak: Paksa seluruh dataframe menjadi format numerik (float/int)
+        # Jika ada data yang gagal diubah (misal typo huruf), akan diubah menjadi NaN (kosong)
+        df = df.apply(pd.to_numeric, errors='coerce')
+        
+        # 4. Pembersihan Data (Data Cleaning - Sesuai Bab 4.2.1 Skripsi)
+        # Menghapus baris yang mengandung nilai NaN agar tidak merusak StandardScaler
+        df = df.dropna()
+        
         return df
     except FileNotFoundError:
         st.error("🚨 File 'data_hipertensi.xlsx' tidak ditemukan! Pastikan file berada di direktori yang sama atau di-upload ke GitHub.")
         return pd.DataFrame() 
 
-# MEMANGGIL FUNGSI (Ini yang memperbaiki error 'df is not defined')
+# MEMANGGIL FUNGSI 
 df = load_data()
 
-# Hentikan eksekusi jika data kosong (file tidak ada) agar tidak error ke bawah
+# Hentikan eksekusi jika data kosong agar tidak error ke bawah
 if df.empty:
     st.stop()
 
