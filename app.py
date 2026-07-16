@@ -18,11 +18,8 @@ from tensorflow.keras.callbacks import EarlyStopping
 st.set_page_config(page_title="Dashboard Deteksi Hipertensi DNN", layout="wide")
 
 st.title("🩺 Sistem Deteksi Dini Hipertensi (DNN)")
-st.markdown("### Implementasi Deep Neural Network - Skripsi Sofiah Baiti Auliyah")
+st.markdown("### Implementasi Deep Neural Network - Deteksi Hipertensi")
 
-# 1. Siapkan Dataset Sesuai Skripsi (214 Data)
-@st.cache_data
-# HAPUS fungsi load_data() yang lama, GANTI dengan yang ini:
 
 @st.cache_data
 def load_data():
@@ -44,7 +41,7 @@ def load_data():
 
 # (Sisa kode di bawahnya tetap sama persis seperti kode yang sebelumnya)
 
-df = load_data()
+#df = load_data()
 
 # 2. Preprocessing & Skalasi (Sesuai Bab 4)
 X = df.drop('Status', axis=1)
