@@ -64,7 +64,7 @@ def build_dnn_model():
     return model
 
 # Sidebar Navigasi
-menu = st.sidebar.radio("Navigasi:", ["1. Arsitektur & Pelatihan Model", "2. Pengujian (Confusion Matrix)", "3. Input Deteksi Pasien"])
+menu = st.sidebar.radio("Dashboard:", ["1. Arsitektur & Pelatihan Model", "2. Pengujian (Confusion Matrix)", "3. Input Deteksi Pasien"])
 
 if menu == "1. Arsitektur & Pelatihan Model":
     st.header("Arsitektur Deep Neural Network & Proses Training")
