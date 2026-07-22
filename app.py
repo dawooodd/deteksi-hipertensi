@@ -156,7 +156,7 @@ elif menu in ["2️⃣ Pelatihan & Evaluasi Model (DNN)", "3️⃣ Klasifikasi &
 # KONTEN MENU 2: PELATIHAN & EVALUASI
 # ==========================================
 if menu == "2️⃣ Pelatihan & Evaluasi Model (DNN)":
-    st.header("Tahap 4 & 5: Pelatihan Model DNN & Uji Akurasi")
+    st.header("Pelatihan Model DNN & Uji Akurasi")
     st.info("Sistem akan mengevaluasi 4 metrik performa klasifikasi: **Akurasi, Precision, Recall, dan F1-Score**.")
     
     col1, col2 = st.columns([1, 1])
@@ -239,7 +239,7 @@ if menu == "2️⃣ Pelatihan & Evaluasi Model (DNN)":
 # KONTEN MENU 3: KLASIFIKASI & OUTPUT
 # ==========================================
 elif menu == "3️⃣ Klasifikasi & Output (Live)":
-    st.header("Tahap 6 & 7: Klasifikasi Hipertensi & Output")
+    st.header("Klasifikasi Hipertensi & Output")
     st.write("Masukkan parameter pasien untuk menghasilkan **Output Klasifikasi** secara langsung menggunakan model DNN terlatih.")
     
     with st.form("form_prediksi"):
@@ -287,25 +287,37 @@ elif menu == "3️⃣ Klasifikasi & Output (Live)":
             st.markdown("---")
             st.subheader("OUTPUT KLASIFIKASI")
             
-            # PENYESUAIAN TEKS OUTPUT (HIPERTENSI / TIDAK)
+            # PENYESUAIAN TEKS OUTPUT (HIPERTENSI / NORMAL) & SARAN MEDIS
             if prediksi_prob < 0.5:
                 confidence = (1 - prediksi_prob) * 100
                 st.error(f"### 🚨 HASIL: HIPERTENSI (Confidence: {confidence:.2f}%)")
                 
                 st.warning("""
                 **🔬 Penjelasan Sistem:**
-                Berdasarkan kalkulasi matriks *Deep Neural Network*, kombinasi input klinis pasien digolongkan ke dalam kelas **Hipertensi**. Model mendeteksi pola yang mengarah pada kondisi berisiko, diperkuat oleh bobot fitur umur dan proporsi fisik pasien.
+                Berdasarkan ekstraksi fitur pada *Deep Neural Network*, sistem mengklasifikasikan kondisi ini sebagai **Hipertensi**. Model mendeteksi parameter tekanan darah Anda berada pada rentang berisiko yang diperkuat oleh bobot proporsi fisik (Usia, Lingkar Perut, BB).
                 """)
+                
+                # SARAN MEDIS JIKA TERDIAGNOSA HIPERTENSI
+                st.error("""
+                **💡 Saran Medis & Tindak Lanjut:**
+                Karena sistem mendeteksi risiko Hipertensi, sangat disarankan untuk melakukan langkah-langkah preventif dan kuratif berikut:
+                1. **Konsultasi Medis (Utama):** Segera periksakan diri ke dokter atau Fasilitas Kesehatan Tingkat Pertama (Puskesmas/Klinik) untuk mendapatkan diagnosis medis pasti dan evaluasi pengobatan.
+                2. **Pola Makan Sehat:** Terapkan diet rendah garam (natrium), hindari makanan cepat saji, serta perbanyak konsumsi sayuran dan buah-buahan.
+                3. **Aktivitas Fisik:** Lakukan olahraga ringan hingga sedang secara teratur, minimal 30 menit sehari (misal: jalan cepat, senam, atau bersepeda).
+                4. **Kontrol Fisik:** Jaga berat badan agar tetap ideal dan pantau ukuran lingkar perut agar tidak melebihi batas aman.
+                5. **Hindari Faktor Risiko Lain:** Hindari asap rokok, batasi konsumsi kafein, dan kelola stres dengan istirahat yang cukup.
+                """)
+                
             else:
                 confidence = prediksi_prob * 100
-                st.success(f"### ✅ HASIL: TIDAK (Confidence: {confidence:.2f}%)")
+                st.success(f"### ✅ HASIL: NORMAL (Confidence: {confidence:.2f}%)")
                 
                 st.info("""
                 **🔬 Penjelasan Sistem:**
-                Hasil klasifikasi jaringan saraf tiruan menggolongkan input pasien ke dalam kelas **Tidak** (Tidak Hipertensi). Berdasarkan ekstraksi fitur, sistem tidak mendeteksi adanya korelasi nilai batas yang mengarah pada risiko hipertensi.
+                Hasil klasifikasi jaringan saraf tiruan menggolongkan input pasien ke dalam kelas **Normal**. Sistem tidak mendeteksi adanya korelasi nilai batas yang mengarah pada risiko hipertensi tinggi.
+                
+                **💡 Saran:** Indikator sirkulasi darah Anda terjaga dengan baik. Tetap pertahankan gaya hidup sehat, makan makanan bergizi, dan rutin berolahraga untuk meminimalisasi risiko penyakit kardiovaskular di masa depan.
                 """)
             
             if bias_corrected:
                 st.toast('Pagar Medis Aktif: Sistem mengoreksi bias prediksi berdasarkan standar baku tekanan darah!', icon='🛡️')
-            if bias_corrected:
-                st.toast('Sistem Pagar Medis (Clinical Guardrails) aktif untuk mengoreksi bias algoritma pada imbalanced dataset!', icon='⚠️')
