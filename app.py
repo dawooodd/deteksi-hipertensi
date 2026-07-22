@@ -41,7 +41,6 @@ def build_dnn_model():
 # ==========================================
 # SIDEBAR: SESUAI FLOWCHART ALUR SISTEM
 # ==========================================
-st.sidebar.image("https://cdn-icons-png.flaticon.com/512/3004/3004451.png", width=100)
 st.sidebar.markdown("<h3 style='text-align: center;'>Navigasi Alur Sistem</h3>", unsafe_allow_html=True)
 st.sidebar.markdown("---")
 
