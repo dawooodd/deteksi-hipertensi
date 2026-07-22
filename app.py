@@ -19,51 +19,12 @@ from tensorflow.keras.callbacks import EarlyStopping
 # ==========================================
 st.set_page_config(page_title="Sistem Deteksi Hipertensi", page_icon="🩺", layout="wide")
 
-# ==========================================
-# LOAD DATA & PREPROCESSING (CACHE)
-# ==========================================
-@st.cache_data
-def load_and_preprocess_data():
-    try:
-        # Tahap 1: INPUT DATA
-        df = pd.read_excel('data_hipertensi.xlsx')
-        
-        # Tahap 2: PREPROCESSING DATA
-        if 'Nama' in df.columns:
-            df = df.drop(columns=['Nama'])
-        if 'No' in df.columns:
-            df = df.drop(columns=['No'])
-            
-        if 'Gender' in df.columns:
-            df['Gender'] = df['Gender'].astype(str).str.strip().str.lower()
-            df['Gender'] = df['Gender'].replace({'l': 0, 'laki-laki': 0, 'p': 1, 'perempuan': 1})
-            
-        if 'Status' in df.columns:
-            df['Status'] = df['Status'].astype(str).str.strip().str.lower()
-            df['Status'] = df['Status'].replace({'hipertensi': 0, 'normal': 1})
-            
-        df = df.apply(pd.to_numeric, errors='coerce').dropna()
-        return df
-    except FileNotFoundError:
-        return pd.DataFrame() 
-
-df = load_and_preprocess_data()
-
-if df.empty:
-    st.error("🚨 File 'data_hipertensi.xlsx' tidak ditemukan! Pastikan file berada di direktori yang sama.")
-    st.stop()
-
-# Tahap 3: PEMBAGIAN DATA (Training & Testing)
-X = df.drop('Status', axis=1)
-y = df['Status']
-
-scaler = StandardScaler()
-X_scaled = scaler.fit_transform(X)
-
-X_train, X_test, y_train, y_test = train_test_split(X_scaled, y, test_size=0.2, random_state=42, stratify=y)
+# INISIALISASI SESSION STATE (Untuk menyimpan data antar menu)
+if 'data_processed' not in st.session_state:
+    st.session_state.data_processed = False
 
 # ==========================================
-# FUNGSI BUILD MODEL
+# FUNGSI BUILD MODEL (Sesuai Skripsi)
 # ==========================================
 def build_dnn_model():
     model = Sequential([
@@ -112,36 +73,90 @@ st.markdown("---")
 # KONTEN MENU 1: INPUT & PREPROCESSING
 # ==========================================
 if menu == "1️⃣ Input & Preprocessing Data":
-    st.header("Tahap 1 & 2: Input Data, Preprocessing, dan Pembagian")
+    st.header("Tahap 1: Input Data (Upload Dataset)")
+    st.write("Silakan unggah dataset skrining kesehatan (format `.csv` atau `.xlsx`) untuk memulai proses ke dalam sistem.")
     
-    col1, col2 = st.columns(2)
-    with col1:
-        st.subheader("Data Skrining Mentah (Input)")
-        st.write("Representasi data awal sebelum dibersihkan dan diubah menjadi numerik.")
-        try:
-            df_raw = pd.read_excel('data_hipertensi.xlsx').head(5)
-            st.dataframe(df_raw, use_container_width=True)
-        except:
-            st.write("Data mentah tidak dapat dimuat.")
-
-    with col2:
-        st.subheader("Data Hasil Preprocessing")
-        st.write("Data setelah proses *Label Encoding* dan pembersihan nilai kosong (NaN).")
-        st.dataframe(df.head(5), use_container_width=True)
-
-    st.markdown("---")
-    st.subheader("Tahap 3: Pembagian Data (Training & Testing)")
-    col3, col4, col5 = st.columns(3)
-    col3.metric("Total Dataset", f"{len(df)} Baris")
-    col4.metric("Data Training (80%)", f"{len(X_train)} Baris")
-    col5.metric("Data Testing (20%)", f"{len(X_test)} Baris")
+    # KOTAK INPUT FILE
+    uploaded_file = st.file_uploader("📂 Upload File Dataset Di Sini", type=["csv", "xlsx"])
     
-    st.success("✔️ Tahap normalisasi menggunakan `StandardScaler` berhasil diterapkan agar skala variabel (seperti Umur dan Sistolik) seimbang saat masuk ke Jaringan Saraf Tiruan.")
+    if uploaded_file is not None:
+        with st.spinner("Membaca data input..."):
+            # Deteksi format file
+            if uploaded_file.name.endswith('.csv'):
+                df_raw = pd.read_csv(uploaded_file)
+            else:
+                df_raw = pd.read_excel(uploaded_file)
+                
+            st.success(f"File **{uploaded_file.name}** berhasil diunggah!")
+            
+            st.subheader("Tampilan Data Mentah (Input)")
+            st.dataframe(df_raw.head(5), use_container_width=True)
+            
+            st.markdown("---")
+            st.header("Tahap 2: Preprocessing Data")
+            
+            # PROSES PREPROCESSING OTOMATIS
+            df = df_raw.copy()
+            if 'Nama' in df.columns:
+                df = df.drop(columns=['Nama'])
+            if 'No' in df.columns:
+                df = df.drop(columns=['No'])
+                
+            if 'Gender' in df.columns:
+                df['Gender'] = df['Gender'].astype(str).str.strip().str.lower()
+                df['Gender'] = df['Gender'].replace({'l': 0, 'laki-laki': 0, 'p': 1, 'perempuan': 1})
+                
+            if 'Status' in df.columns:
+                df['Status'] = df['Status'].astype(str).str.strip().str.lower()
+                df['Status'] = df['Status'].replace({'hipertensi': 0, 'normal': 1})
+                
+            df = df.apply(pd.to_numeric, errors='coerce').dropna()
+            
+            st.write("**Data Hasil Preprocessing (Label Encoding & Pembersihan NaN):**")
+            st.dataframe(df.head(5), use_container_width=True)
+            
+            st.markdown("---")
+            st.header("Tahap 3: Pembagian Data (Training & Testing)")
+            
+            # PEMBAGIAN DATA
+            X = df.drop('Status', axis=1)
+            y = df['Status']
+            
+            scaler = StandardScaler()
+            X_scaled = scaler.fit_transform(X)
+            
+            X_train, X_test, y_train, y_test = train_test_split(X_scaled, y, test_size=0.2, random_state=42, stratify=y)
+            
+            # SIMPAN KE SESSION STATE
+            st.session_state.X_train = X_train
+            st.session_state.X_test = X_test
+            st.session_state.y_train = y_train
+            st.session_state.y_test = y_test
+            st.session_state.scaler = scaler
+            st.session_state.data_processed = True
+            
+            # METRIK INFORMASI DATA
+            col3, col4, col5 = st.columns(3)
+            col3.metric("📊 Total Data Bersih", f"{len(df)} Baris")
+            col4.metric("📈 Data Training (80%)", f"{len(X_train)} Baris")
+            col5.metric("📉 Data Testing (20%)", f"{len(X_test)} Baris")
+            
+            st.info("✔️ Proses Preprocessing dan Normalisasi dengan `StandardScaler` telah selesai. **Silakan lanjut ke menu Tahap 2 di *Sidebar*.**")
+    else:
+        st.warning("⚠️ Menunggu dataset... Silakan upload file terlebih dahulu untuk melanjutkan alur sistem.")
+
+# ==========================================
+# PROTEKSI MENU LAIN (Wajib Upload Dulu)
+# ==========================================
+elif menu in ["2️⃣ Pelatihan & Evaluasi Model (DNN)", "3️⃣ Klasifikasi & Output (Live)"]:
+    if not st.session_state.data_processed:
+        st.warning("🚨 **PERHATIAN:** Anda belum mengunggah dan memproses dataset. Sesuai alur flowchart, silakan kembali ke menu **1️⃣ Input & Preprocessing Data** terlebih dahulu.")
+        st.stop()
 
 # ==========================================
 # KONTEN MENU 2: PELATIHAN & EVALUASI
 # ==========================================
-elif menu == "2️⃣ Pelatihan & Evaluasi Model (DNN)":
+if menu == "2️⃣ Pelatihan & Evaluasi Model (DNN)":
     st.header("Tahap 4 & 5: Pelatihan Model DNN & Uji Akurasi")
     
     st.info("Sesuai flowchart, sistem akan mengevaluasi: **'Apakah akurasi model baik?'**. Jika belum memenuhi target, Anda dapat melatih ulang dengan konfigurasi Epoch yang berbeda.")
@@ -156,6 +171,12 @@ elif menu == "2️⃣ Pelatihan & Evaluasi Model (DNN)":
 
     if btn_train:
         with st.spinner("Model sedang mempelajari pola kompleks dari data kesehatan..."):
+            # Ambil data dari session state
+            X_train = st.session_state.X_train
+            y_train = st.session_state.y_train
+            X_test = st.session_state.X_test
+            y_test = st.session_state.y_test
+            
             model = build_dnn_model()
             early_stop = EarlyStopping(monitor='val_loss', patience=15, restore_best_weights=True)
             
@@ -223,7 +244,12 @@ elif menu == "3️⃣ Klasifikasi & Output (Live)":
         
     if submit:
         with st.spinner("Mengklasifikasi input menggunakan bobot jaringan saraf tiruan..."):
-            # Latih ulang senyap untuk memuat bobot (untuk keperluan live demo)
+            # Load Data dan Scaler dari Session State
+            X_train = st.session_state.X_train
+            y_train = st.session_state.y_train
+            scaler = st.session_state.scaler
+            
+            # Latih ulang senyap untuk memuat bobot
             model = build_dnn_model()
             model.fit(X_train, y_train, epochs=30, batch_size=16, verbose=0)
             
@@ -249,27 +275,23 @@ elif menu == "3️⃣ Klasifikasi & Output (Live)":
             st.subheader("HASIL OUTPUT KLASIFIKASI")
             
             if prediksi_prob < 0.5:
-                # OUTPUT: HIPERTENSI
                 confidence = (1 - prediksi_prob) * 100
                 st.error(f"### 🚨 KESIMPULAN: BERISIKO HIPERTENSI (Confidence: {confidence:.2f}%)")
-                
                 st.warning("""
                 **🔬 Penjelasan & Insight Sistem:**
                 Berdasarkan arsitektur *Deep Neural Network*, kombinasi fitur klinis yang Anda masukkan menghasilkan aktivasi node *Sigmoid* mendekati 0. Sistem mengklasifikasikan kondisi ini sebagai **Hipertensi**. 
                 
-                *Faktor Penyumbang:* Model mendeteksi parameter tekanan darah Anda berada pada rentang berisiko. Faktor penyerta seperti usia dewasa dan proporsi fisik (Berat Badan / Lingkar Perut) memperkuat bobot prediksi risiko ini. Pasien sangat disarankan untuk melakukan skrining lanjutan secara langsung dengan tenaga medis.
+                *Faktor Penyumbang:* Model mendeteksi parameter tekanan darah Anda berada pada rentang berisiko. Faktor penyerta seperti usia dewasa dan proporsi fisik memperkuat bobot prediksi risiko ini. Pasien sangat disarankan untuk melakukan skrining lanjutan secara langsung dengan tenaga medis.
                 """)
             else:
-                # OUTPUT: NORMAL
                 confidence = prediksi_prob * 100
                 st.success(f"### ✅ KESIMPULAN: TEKANAN DARAH NORMAL (Confidence: {confidence:.2f}%)")
-                
                 st.info("""
                 **🔬 Penjelasan & Insight Sistem:**
                 Berdasarkan ekstraksi fitur pada lapisan *Hidden Layer* jaringan saraf, input pasien menghasilkan aktivasi node *Sigmoid* mendekati 1. Sistem mengklasifikasikan kondisi sirkulasi darah pasien dalam batas **Normal**.
                 
-                *Insight Medis:* Indikator tekanan darah Anda terjaga dengan baik. Jaringan saraf tidak menemukan pola bahaya dari hubungan non-linear antara usia, lingkar perut, dan parameter vital Anda. Tetap pertahankan gaya hidup sehat untuk meminimalisasi penyakit kardiovaskular.
+                *Insight Medis:* Indikator tekanan darah Anda terjaga dengan baik. Jaringan saraf tidak menemukan pola bahaya dari parameter vital Anda. Tetap pertahankan gaya hidup sehat.
                 """)
             
             if bias_corrected:
-                st.toast('Sistem Pagar Medis (Clinical Guardrails) aktif untuk mengoreksi bias algoritma!', icon='⚠️')
+                st.toast('Sistem Pagar Medis (Clinical Guardrails) aktif untuk mengoreksi bias algoritma pada imbalanced dataset!', icon='⚠️')
