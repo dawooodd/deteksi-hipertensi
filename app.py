@@ -45,7 +45,6 @@ st.sidebar.markdown("<h3 style='text-align: center;'>Navigasi Alur Sistem</h3>",
 st.sidebar.markdown("---")
 
 menu = st.sidebar.radio(
-    "Tahapan Flowchart (Gambar 3.2):", 
     [
         "1️⃣ Input & Preprocessing Data", 
         "2️⃣ Pelatihan & Evaluasi Model (DNN)", 
