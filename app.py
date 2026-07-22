@@ -156,9 +156,8 @@ elif menu in ["2️⃣ Pelatihan & Evaluasi Model (DNN)", "3️⃣ Klasifikasi &
 # KONTEN MENU 2: PELATIHAN & EVALUASI
 # ==========================================
 if menu == "2️⃣ Pelatihan & Evaluasi Model (DNN)":
-    st.header("Pelatihan Model DNN & Uji Akurasi")
-    
-    st.info("Sesuai flowchart, sistem akan mengevaluasi: **'Apakah akurasi model baik?'**. Jika belum memenuhi target, Anda dapat melatih ulang dengan konfigurasi Epoch yang berbeda.")
+    st.header("Tahap 4 & 5: Pelatihan Model DNN & Uji Akurasi")
+    st.info("Sistem akan mengevaluasi 4 metrik performa klasifikasi: **Akurasi, Precision, Recall, dan F1-Score**.")
     
     col1, col2 = st.columns([1, 1])
     with col1:
@@ -170,7 +169,6 @@ if menu == "2️⃣ Pelatihan & Evaluasi Model (DNN)":
 
     if btn_train:
         with st.spinner("Model sedang mempelajari pola kompleks dari data kesehatan..."):
-            # Ambil data dari session state
             X_train = st.session_state.X_train
             y_train = st.session_state.y_train
             X_test = st.session_state.X_test
@@ -188,20 +186,31 @@ if menu == "2️⃣ Pelatihan & Evaluasi Model (DNN)":
                 verbose=0
             )
             
-            # Pengujian dengan Data Testing
             y_pred_prob = model.predict(X_test)
             y_pred = (y_pred_prob > 0.5).astype(int)
-            report = classification_report(y_test, y_pred, target_names=['Hipertensi (0)', 'Normal (1)'], output_dict=True)
+            
+            # MENGAMBIL 4 METRIK EVALUASI UTAMA
+            report = classification_report(y_test, y_pred, target_names=['Hipertensi (0)', 'Tidak (1)'], output_dict=True)
             akurasi_asli = report['accuracy'] * 100
+            precision_asli = report['Hipertensi (0)']['precision'] * 100
+            recall_asli = report['Hipertensi (0)']['recall'] * 100
+            f1_asli = report['Hipertensi (0)']['f1-score'] * 100
             
             st.markdown("---")
             # LOGIKA FLOWCHART: APAKAH AKURASI BAIK?
             if akurasi_asli >= target_akurasi:
-                st.success(f"### ✔️ YA, AKURASI BAIK! (Mencapai {akurasi_asli:.2f}%)")
-                st.write("Sesuai alur sistem, karena akurasi sudah memenuhi standar, model siap digunakan untuk tahap **Klasifikasi Hipertensi (Output)**.")
+                st.success(f"### ✔️ YA, AKURASI MODEL BAIK! (Mencapai {akurasi_asli:.2f}%)")
+                st.write("Sesuai alur sistem, model siap digunakan untuk tahap **Klasifikasi Hipertensi (Output)**.")
             else:
                 st.error(f"### ❌ TIDAK, AKURASI KURANG! (Hanya {akurasi_asli:.2f}%)")
-                st.write("Sesuai flowchart, silakan **kembali ke tahap Pelatihan Model DNN** dengan menambah jumlah Epoch atau mengevaluasi parameter data.")
+                st.write("Sesuai flowchart, silakan **kembali ke tahap Pelatihan Model DNN** dengan menambah jumlah Epoch.")
+            
+            st.markdown("### 📌 4 Metrik Evaluasi Klasifikasi")
+            col_m1, col_m2, col_m3, col_m4 = st.columns(4)
+            col_m1.metric("1. Akurasi", f"{akurasi_asli:.2f}%")
+            col_m2.metric("2. Precision", f"{precision_asli:.2f}%")
+            col_m3.metric("3. Recall", f"{recall_asli:.2f}%")
+            col_m4.metric("4. F1-Score", f"{f1_asli:.2f}%")
             
             st.markdown("---")
             c1, c2 = st.columns(2)
@@ -209,20 +218,28 @@ if menu == "2️⃣ Pelatihan & Evaluasi Model (DNN)":
                 st.subheader("📈 Grafik Akurasi Pelatihan")
                 chart_acc = pd.DataFrame({'Train Accuracy': history.history['accuracy'], 'Validation Accuracy': history.history['val_accuracy']})
                 st.line_chart(chart_acc)
+                
+                st.subheader("📉 Grafik Loss Pelatihan")
+                chart_loss = pd.DataFrame({'Train Loss': history.history['loss'], 'Validation Loss': history.history['val_loss']})
+                st.line_chart(chart_loss)
+                
             with c2:
-                st.subheader("📊 Confusion Matrix (Data Testing)")
+                st.subheader("📊 Confusion Matrix")
                 cm = confusion_matrix(y_test, y_pred)
                 fig_cm = plt.figure(figsize=(4, 3))
-                sns.heatmap(cm, annot=True, fmt="d", cmap="Blues", xticklabels=['Hipertensi', 'Normal'], yticklabels=['Hipertensi', 'Normal'])
+                sns.heatmap(cm, annot=True, fmt="d", cmap="Blues", xticklabels=['Hipertensi', 'Tidak'], yticklabels=['Hipertensi', 'Tidak'])
                 plt.xlabel('Prediksi Model')
                 plt.ylabel('Data Aktual (Testing)')
                 st.pyplot(fig_cm)
+                
+                st.subheader("📑 Classification Report (Lengkap)")
+                st.dataframe(pd.DataFrame(report).transpose(), use_container_width=True)
 
 # ==========================================
 # KONTEN MENU 3: KLASIFIKASI & OUTPUT
 # ==========================================
 elif menu == "3️⃣ Klasifikasi & Output (Live)":
-    st.header("Klasifikasi Hipertensi & Output")
+    st.header("Tahap 6 & 7: Klasifikasi Hipertensi & Output")
     st.write("Masukkan parameter pasien untuk menghasilkan **Output Klasifikasi** secara langsung menggunakan model DNN terlatih.")
     
     with st.form("form_prediksi"):
@@ -243,12 +260,10 @@ elif menu == "3️⃣ Klasifikasi & Output (Live)":
         
     if submit:
         with st.spinner("Mengklasifikasi input menggunakan bobot jaringan saraf tiruan..."):
-            # Load Data dan Scaler dari Session State
             X_train = st.session_state.X_train
             y_train = st.session_state.y_train
             scaler = st.session_state.scaler
             
-            # Latih ulang senyap untuk memuat bobot
             model = build_dnn_model()
             model.fit(X_train, y_train, epochs=30, batch_size=16, verbose=0)
             
@@ -256,10 +271,9 @@ elif menu == "3️⃣ Klasifikasi & Output (Live)":
             input_data = np.array([[gender_val, umur, bb, tb, lp, sistolik, diastolik]])
             input_scaled = scaler.transform(input_data)
             
-            # Prediksi mentah AI
             prediksi_prob = model.predict(input_scaled)[0][0]
             
-            # CLINICAL GUARDRAILS (Solusi Bias Dataset)
+            # CLINICAL GUARDRAILS (Pencegah Bias Imbalanced Data)
             bias_corrected = False
             if sistolik < 140 and diastolik < 90:
                 if prediksi_prob < 0.5:
@@ -271,26 +285,27 @@ elif menu == "3️⃣ Klasifikasi & Output (Live)":
                     bias_corrected = True
             
             st.markdown("---")
-            st.subheader("HASIL OUTPUT KLASIFIKASI")
+            st.subheader("OUTPUT KLASIFIKASI")
             
+            # PENYESUAIAN TEKS OUTPUT (HIPERTENSI / TIDAK)
             if prediksi_prob < 0.5:
                 confidence = (1 - prediksi_prob) * 100
-                st.error(f"### 🚨 KESIMPULAN: BERISIKO HIPERTENSI (Confidence: {confidence:.2f}%)")
-                st.warning("""
-                **🔬 Penjelasan & Insight Sistem:**
-                Berdasarkan arsitektur *Deep Neural Network*, kombinasi fitur klinis yang Anda masukkan menghasilkan aktivasi node *Sigmoid* mendekati 0. Sistem mengklasifikasikan kondisi ini sebagai **Hipertensi**. 
+                st.error(f"### 🚨 HASIL: HIPERTENSI (Confidence: {confidence:.2f}%)")
                 
-                *Faktor Penyumbang:* Model mendeteksi parameter tekanan darah Anda berada pada rentang berisiko. Faktor penyerta seperti usia dewasa dan proporsi fisik memperkuat bobot prediksi risiko ini. Pasien sangat disarankan untuk melakukan skrining lanjutan secara langsung dengan tenaga medis.
+                st.warning("""
+                **🔬 Penjelasan Sistem:**
+                Berdasarkan kalkulasi matriks *Deep Neural Network*, kombinasi input klinis pasien digolongkan ke dalam kelas **Hipertensi**. Model mendeteksi pola yang mengarah pada kondisi berisiko, diperkuat oleh bobot fitur umur dan proporsi fisik pasien.
                 """)
             else:
                 confidence = prediksi_prob * 100
-                st.success(f"### ✅ KESIMPULAN: TEKANAN DARAH NORMAL (Confidence: {confidence:.2f}%)")
-                st.info("""
-                **🔬 Penjelasan & Insight Sistem:**
-                Berdasarkan ekstraksi fitur pada lapisan *Hidden Layer* jaringan saraf, input pasien menghasilkan aktivasi node *Sigmoid* mendekati 1. Sistem mengklasifikasikan kondisi sirkulasi darah pasien dalam batas **Normal**.
+                st.success(f"### ✅ HASIL: TIDAK (Confidence: {confidence:.2f}%)")
                 
-                *Insight Medis:* Indikator tekanan darah Anda terjaga dengan baik. Jaringan saraf tidak menemukan pola bahaya dari parameter vital Anda. Tetap pertahankan gaya hidup sehat.
+                st.info("""
+                **🔬 Penjelasan Sistem:**
+                Hasil klasifikasi jaringan saraf tiruan menggolongkan input pasien ke dalam kelas **Tidak** (Tidak Hipertensi). Berdasarkan ekstraksi fitur, sistem tidak mendeteksi adanya korelasi nilai batas yang mengarah pada risiko hipertensi.
                 """)
             
+            if bias_corrected:
+                st.toast('Pagar Medis Aktif: Sistem mengoreksi bias prediksi berdasarkan standar baku tekanan darah!', icon='🛡️')
             if bias_corrected:
                 st.toast('Sistem Pagar Medis (Clinical Guardrails) aktif untuk mengoreksi bias algoritma pada imbalanced dataset!', icon='⚠️')
