@@ -73,7 +73,7 @@ st.markdown("---")
 # KONTEN MENU 1: INPUT & PREPROCESSING
 # ==========================================
 if menu == "1️⃣ Input & Preprocessing Data":
-    st.header("Tahap 1: Input Data (Upload Dataset)")
+    st.header("Input Data (Upload Dataset)")
     st.write("Silakan unggah dataset skrining kesehatan (format `.csv` atau `.xlsx`) untuk memulai proses ke dalam sistem.")
     
     # KOTAK INPUT FILE
@@ -157,7 +157,7 @@ elif menu in ["2️⃣ Pelatihan & Evaluasi Model (DNN)", "3️⃣ Klasifikasi &
 # KONTEN MENU 2: PELATIHAN & EVALUASI
 # ==========================================
 if menu == "2️⃣ Pelatihan & Evaluasi Model (DNN)":
-    st.header("Tahap 4 & 5: Pelatihan Model DNN & Uji Akurasi")
+    st.header("Pelatihan Model DNN & Uji Akurasi")
     
     st.info("Sesuai flowchart, sistem akan mengevaluasi: **'Apakah akurasi model baik?'**. Jika belum memenuhi target, Anda dapat melatih ulang dengan konfigurasi Epoch yang berbeda.")
     
@@ -223,7 +223,7 @@ if menu == "2️⃣ Pelatihan & Evaluasi Model (DNN)":
 # KONTEN MENU 3: KLASIFIKASI & OUTPUT
 # ==========================================
 elif menu == "3️⃣ Klasifikasi & Output (Live)":
-    st.header("Tahap 6 & 7: Klasifikasi Hipertensi & Output")
+    st.header("Klasifikasi Hipertensi & Output")
     st.write("Masukkan parameter pasien untuk menghasilkan **Output Klasifikasi** secara langsung menggunakan model DNN terlatih.")
     
     with st.form("form_prediksi"):
